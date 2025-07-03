@@ -192,16 +192,16 @@ def get_explanation():
         return jsonify({"detail": "Topic is required."}), 400
 
     messages = [
-        {"role": "system", "content": "You are an expert, concise, and encouraging AI tutor. Provide clear explanations and constructive feedback. Use simple, direct language. Keep responses under 400 words for comprehensive yet manageable audio generation."}
+        {"role": "system", "content": "You are an expert, concise, and encouraging tutor. Provide clear explanations and constructive feedback. Use simple, direct language with a warm tone. Keep responses under 120 words and avoid bullet points for comprehensive yet manageable audio generation. The end goal is to explain the required concept to the person so they can understand it."}
     ]
 
     if user_explanation:
         messages.append(
-            {"role": "user", "content": f"The topic is: '{topic}'. The user's explanation is: '{user_explanation}'. Please provide constructive feedback on their explanation, pointing out strengths and areas for improvement."}
+            {"role": "user", "content": f"The topic is: '{topic}'. The user's explanation is: '{user_explanation}'. Please provide constructive feedback on their explanation, pointing out strengths and areas for improvement. Keep the response under 120 words and avoid bullet points. Use a warm and encouraging tone, simple language, and direct explanations. The end goal is for the user to understand the strengths and weaknesses of their understanding of the concept."}
         )
     else:
         messages.append(
-            {"role": "user", "content": f"Explain the following topic concisely and clearly in under 200 words: '{topic}'."}
+            {"role": "user", "content": f"Explain the following topic concisely and clearly in under 120 words: '{topic}'."}
         )
 
     try:
