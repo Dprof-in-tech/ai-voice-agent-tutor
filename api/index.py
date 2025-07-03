@@ -7,6 +7,7 @@ import openai
 import requests
 import time
 import base64
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -73,24 +74,27 @@ def transcribe_audio():
     if not audio_file.filename or not audio_file.filename.endswith(('.mp3', '.wav', '.m4a', '.webm')):
         return jsonify({"detail": "Invalid file type. Only common audio files are accepted."}), 400
 
-    temp_audio_path = None
     try:
-        temp_audio_path = f"temp_audio_{uuid.uuid4()}.wav"
-        audio_file.save(temp_audio_path)
+        # Read file content into memory
+        file_bytes = audio_file.read()
+        file_stream = BytesIO(file_bytes)
 
-        with open(temp_audio_path, "rb") as audio:
-            transcript = openai_client.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio
-            )
-        
+        # Rewind the stream to the beginning
+        file_stream.seek(0)
+
+        # Prepare a file-like object with filename (OpenAI expects this for MIME sniffing)
+        file_stream.name = audio_file.filename or f"temp_{uuid.uuid4()}.wav"
+
+        # Transcribe audio using OpenAI Whisper
+        transcript = openai_client.audio.transcriptions.create(
+            model="whisper-1",
+            file=file_stream
+        )
+
         return jsonify({"transcript": transcript.text})
     except Exception as e:
         print(f"Transcription error: {e}")
         return jsonify({"detail": str(e)}), 500
-    finally:
-        if temp_audio_path and os.path.exists(temp_audio_path):
-            os.remove(temp_audio_path)
 
 def generate_audio_with_retries(text, max_retries=3):
     """Generate audio with retry logic and multiple voice options"""
